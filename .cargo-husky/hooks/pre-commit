@@ -1,0 +1,14 @@
+#!/bin/sh
+# cargo-husky pre-commit hook
+
+set -e
+
+echo "🦀 Running pre-commit checks..."
+
+echo "  → Checking formatting..."
+cargo fmt --check
+
+echo "  → Running clippy..."
+cargo clippy -- -D warnings
+
+echo "✅ All pre-commit checks passed!"

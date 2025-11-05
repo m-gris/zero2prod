@@ -1,0 +1,11 @@
+#!/bin/sh
+# cargo-husky pre-push hook
+
+set -e
+
+echo "🚀 Running pre-push checks..."
+
+echo "  → Running tests..."
+cargo test
+
+echo "✅ All pre-push checks passed!"
