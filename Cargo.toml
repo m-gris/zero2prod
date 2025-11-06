@@ -1,7 +1,11 @@
 [package]
 name = "zero2prod"
 version = "0.1.0"
-edition = "2025"
+# NOTE: Rust editions are not calendar years!
+# Valid editions: 2015, 2018, 2021, 2024
+# The edition indicates which language features/breaking changes are enabled
+# Even though we're in 2025, Rust 2024 edition is the latest available
+edition = "2024"
 author = [ "Marc GRIS <contact@marcgris.com>" ]
 
 
