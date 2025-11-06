@@ -6,7 +6,7 @@ version = "0.1.0"
 # The edition indicates which language features/breaking changes are enabled
 # Even though we're in 2025, Rust 2024 edition is the latest available
 edition = "2024"
-author = [ "Marc GRIS <contact@marcgris.com>" ]
+authors = [ "Marc GRIS <contact@marcgris.com>" ]
 
 
 [lib]
