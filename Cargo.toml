@@ -15,6 +15,9 @@ author = [ "Marc GRIS <contact@marcgris.com>" ]
 # If unspecified, cargo will default to `package.name`, which is what we want.
 path = "rust-version/src/lib.rs"
 
+# Notice the double square brackets: it's an array in TOML's syntax.
+# We can only have one library in a project, but we can have multiple binaries!
+# To manage multiple libraries in the same repository: the workspace feature.
 [[bin]]
 name = "zero2prod"
 path = "rust-version/src/main.rs"
