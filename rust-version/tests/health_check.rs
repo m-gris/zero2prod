@@ -31,4 +31,8 @@ async fn health_check_works() {
         // but we have no use for it here, hence the non-binding let
         let _ = tokio::spawn(server);
     }
+
+    // A NOTE ON CLEAN-UP / TEARDOWN
+    // when a tokio runtime is shut down all tasks spawned on it are dropped.
+    // tokio::test spins up a new runtime at the beginning of each test case and they shut down at the end of each test case.
 }
