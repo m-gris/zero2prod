@@ -13,8 +13,8 @@ Organized chronologically as concepts appear.
 | `::` | Path separator for modules/types/static functions | `.` for packages, objects |
 | `.` | Method call on instance | `.` (same) |
 | `&str` | String slice - immutable reference to string data | `String` (immutable by default) |
-| `const` | Compile-time constant (must be computable at compile time) | `val` at top level |
-| `let` | Variable binding (immutable by default) | `val` |
+| `const` | Compile-time constant, always inlined, requires type annotation | `val` but stricter (must be compile-time) |
+| `let` | Runtime variable binding (immutable by default), type inferred | `val` (evaluated at runtime) |
 | `let mut` | Mutable variable binding | `var` |
 | `!` (in `println!`) | Indicates a macro, not a function | N/A - no macro syntax in Scala |
 | `format!` | Runtime string formatting macro (returns `String`) | `s"text $var"` string interpolation |

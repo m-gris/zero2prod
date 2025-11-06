@@ -1,5 +1,7 @@
 //! tests/health_check.rs
 
+use const_format::formatcp; // For compile-time string formatting
+
 // `tokio::test` is the testing equivalent of `tokio::main`.
 // It also spares you from having to specify the `#[test]` attribute. //
 // You can inspect what code gets generated using
@@ -10,10 +12,14 @@ async fn health_check_works() {
     spawn_app();
     // use REQWEST to perform HTTP requests against our app
     let client = reqwest::Client::new();
+    const HOST: &str = "127.0.0.1";
+    const PORT: &str = "8765";
+    const ROOT_ADDRESS: &str = formatcp!("{}:{}", HOST, PORT);
+    const HEALTH_ADDRESS: &str = formatcp!("http://{}/health_check", ROOT_ADDRESS);
 
     // ACT
     let response = client
-        .get("http://127.0.0.1:8000/health_check")
+        .get(HEALTH_ADDRESS)
         .send()
         .await
         .expect("Failed to execute request");
@@ -26,7 +32,7 @@ async fn health_check_works() {
     // We are also running tests, so it is not worth it to propagate errors:
     // if we fail to perform the required setup we can just panic and crash.
     fn spawn_app() {
-        let server = zero2prod::run().expect("Failed to bind address"); // Launch the server as a background task
+        let server = zero2prod::run(ROOT_ADDRESS).expect("Failed to bind address"); // Launch the server as a background task
         // tokio::spawn returns a handle to the spawned future,
         // but we have no use for it here, hence the non-binding let
         let _ = tokio::spawn(server);

@@ -7,22 +7,6 @@
 // . is for method calls on instances
 // Example: String::from("text") vs my_string.len()
 use actix_web::{App, HttpRequest, HttpResponse, HttpServer, Responder, dev::Server, web};
-use const_format::formatcp; // For compile-time string formatting
-
-const HOST: &str = "127.0.0.1";
-const PORT: &str = "8000";
-
-// LESSON: Compile-time vs Runtime String Composition
-// ====================================================
-// formatcp! = "format compile" - compile-time string concatenation
-// Works exactly like format! but evaluates at compile time
-// The result is baked into the binary as a string literal
-// NOTE: const VALUES MUST BE COMPUTED AT COMPILE TIME, hence we must use formatcp!
-const TCP_SOCKET_ADDRESS: &str = formatcp!("{}:{}", HOST, PORT);
-// TERMINOLOGY CLARIFICATION:
-// - TCP_SOCKET_ADDRESS: A string representing where to bind ("127.0.0.1:8000")
-// - TCP Socket: The actual OS resource created when .bind() is called
-// - TCP Connection: An accepted connection on that socket
 
 async fn health_check() -> impl Responder {
     // impl Responder = "returns some concrete type that implements the Responder trait"
@@ -41,7 +25,7 @@ async fn greet(req: HttpRequest) -> impl Responder {
 }
 
 // NOTE: pub fn: public since it is not a binary entrypoint
-pub fn run() -> Result<Server, std::io::Error> {
+pub fn run(tcp_socket_address: &str) -> Result<Server, std::io::Error> {
     // Result is left-biased vs. Scala Either 'conventionally' right-biased
 
     // HttpServer handles all transport level concerns
@@ -62,7 +46,7 @@ pub fn run() -> Result<Server, std::io::Error> {
             )
             .route("/greet/{name}", web::get().to(greet))
     })
-    .bind(TCP_SOCKET_ADDRESS)? // ? operator: if bind() fails, return the error immediately
+    .bind(tcp_socket_address)? // ? operator: if bind() fails, return the error immediately
     // if success, unwrap the Ok value and continue
     // Requires function to return Result<T, E>
     // Like early exit in Scala for-comprehension, but for errors
