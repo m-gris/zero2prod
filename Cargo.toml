@@ -22,8 +22,12 @@ path = "rust-version/src/lib.rs"
 name = "zero2prod"
 path = "rust-version/src/main.rs"
 
-# Note: tests in rust-version/tests/ are automatically discovered by Cargo
-# No need to explicitly configure [[test]] for standard locations
+# Integration tests: With custom paths, Cargo doesn't auto-discover tests.
+# Each test file must be explicitly declared here (unfortunately, no glob support).
+# TODO: Move to standard layout (tests/ at root) for auto-discovery.
+[[test]]
+name = "health_check"
+path = "rust-version/tests/health_check.rs"
 
 [dependencies]
 actix-web = "4"
@@ -32,3 +36,4 @@ const_format = "0.2"  # For compile-time string composition
 
 [dev-dependencies]
 cargo-husky = { version = "1", default-features = false, features = ["user-hooks"] }
+reqwest = "0.12"
