@@ -2,6 +2,8 @@
 //! Documents the module/crate itself
 //! Used at the top of files
 
+use std::net::TcpListener;
+
 use const_format::formatcp; // For compile-time string formatting
 
 use zero2prod::run;
@@ -28,6 +30,8 @@ const TCP_SOCKET_ADDRESS: &str = formatcp!("{}:{}", HOST, PORT);
 // Like IORuntime.global in cats-effect - without it, async code can't run
 #[tokio::main]
 async fn main() -> Result<(), std::io::Error> {
-    run(TCP_SOCKET_ADDRESS)? // unwrapp the result of run() , i.e Result<Server, Error>
+    let listener = TcpListener::bind(TCP_SOCKET_ADDRESS).expect("Failed to bind to the address");
+
+    run(listener)? // unwrapp the result of run() , i.e Result<Server, Error>
         .await // Actually executes the Server (Future) (like unsafeRunSync in cats-effect)
 }

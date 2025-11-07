@@ -7,6 +7,7 @@
 // . is for method calls on instances
 // Example: String::from("text") vs my_string.len()
 use actix_web::{App, HttpRequest, HttpResponse, HttpServer, Responder, dev::Server, web};
+use std::net::TcpListener;
 
 async fn health_check() -> impl Responder {
     // impl Responder = "returns some concrete type that implements the Responder trait"
@@ -25,7 +26,7 @@ async fn greet(req: HttpRequest) -> impl Responder {
 }
 
 // NOTE: pub fn: public since it is not a binary entrypoint
-pub fn run(tcp_socket_address: &str) -> Result<Server, std::io::Error> {
+pub fn run(listener: TcpListener) -> Result<Server, std::io::Error> {
     // Result is left-biased vs. Scala Either 'conventionally' right-biased
 
     // HttpServer handles all transport level concerns
@@ -46,7 +47,7 @@ pub fn run(tcp_socket_address: &str) -> Result<Server, std::io::Error> {
             )
             .route("/greet/{name}", web::get().to(greet))
     })
-    .bind(tcp_socket_address)? // ? operator: if bind() fails, return the error immediately
+    .listen(listener)? // ? operator: if bind() fails, return the error immediately
     // if success, unwrap the Ok value and continue
     // Requires function to return Result<T, E>
     // Like early exit in Scala for-comprehension, but for errors

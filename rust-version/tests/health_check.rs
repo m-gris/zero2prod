@@ -1,5 +1,7 @@
 //! tests/health_check.rs
 
+use std::net::TcpListener;
+
 use const_format::formatcp; // For compile-time string formatting
 
 // `tokio::test` is the testing equivalent of `tokio::main`.
@@ -9,17 +11,15 @@ use const_format::formatcp; // For compile-time string formatting
 #[tokio::test]
 async fn health_check_works() {
     // ARRANGE
-    spawn_app();
+    let root_address = spawn_app();
+    // nota: no http:// in the string... since it already is baked in root_address
+    let health_address = &format!("{}/health_check", &root_address);
     // use REQWEST to perform HTTP requests against our app
     let client = reqwest::Client::new();
-    const HOST: &str = "127.0.0.1";
-    const PORT: &str = "8765";
-    const ROOT_ADDRESS: &str = formatcp!("{}:{}", HOST, PORT);
-    const HEALTH_ADDRESS: &str = formatcp!("http://{}/health_check", ROOT_ADDRESS);
 
     // ACT
     let response = client
-        .get(HEALTH_ADDRESS)
+        .get(health_address)
         .send()
         .await
         .expect("Failed to execute request");
@@ -31,11 +31,21 @@ async fn health_check_works() {
     // No .await call, therefore no need for `spawn_app` to be async now.
     // We are also running tests, so it is not worth it to propagate errors:
     // if we fail to perform the required setup we can just panic and crash.
-    fn spawn_app() {
-        let server = zero2prod::run(ROOT_ADDRESS).expect("Failed to bind address"); // Launch the server as a background task
+    fn spawn_app() -> String {
+        const HOST: &str = "127.0.0.1";
+        const RANDOM_PORT: &str = "0"; // (i.e OS scan and takes whatever is available)
+        const TMP_ADDRESS: &str = formatcp!("{}:{}", HOST, RANDOM_PORT);
+        let listener: TcpListener =
+            TcpListener::bind(TMP_ADDRESS).expect("Failed to bind to the address");
+        // We retrieve the port assigned to us by the OS
+        let port = listener.local_addr().unwrap().port();
+        let server = zero2prod::run(listener).expect("Failed to bind address"); // Launch the server as a background task
         // tokio::spawn returns a handle to the spawned future,
         // but we have no use for it here, hence the non-binding let
         let _ = tokio::spawn(server);
+
+        // We return the application address to the caller!
+        format!("http://127.0.0.1:{}", port)
     }
 
     // A NOTE ON CLEAN-UP / TEARDOWN

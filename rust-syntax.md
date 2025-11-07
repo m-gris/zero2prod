@@ -44,6 +44,13 @@ Organized chronologically as concepts appear.
 | `Some(value)` | Present value in Option | `Some(value)` (same!) |
 | `None` | Absent value in Option | `None` (same!) |
 | `tokio::spawn(future)` | Spawns future as background task on tokio runtime | `io.start` in cats-effect or `zio.fork` in ZIO |
+| `String` | Owned, heap-allocated, growable string type | `StringBuilder` or mutable string buffer |
+| `&str` vs `String` | `&str` is borrowed reference (doesn't own), `String` owns data | In Scala, `String` is always a reference (GC-managed) |
+| `&expr` | Borrow operator - creates reference to a value | N/A - everything already a reference in Scala |
+| `'static` | Lifetime annotation - data lives for entire program duration | N/A - GC handles lifetime |
+| `'a` (lifetime) | Lifetime parameter - ties borrowed data's lifetime to scope | N/A - GC manages this |
+| Deref coercion | `String` automatically converts to `&str` when `&str` expected | Implicit conversions |
+| `&format!(...)` | Borrow the temporary String created by format! macro | Creates temporary reference |
 
 ---
 
@@ -53,3 +60,9 @@ Organized chronologically as concepts appear.
 - **Immutable by default** - `let` creates immutable bindings (like Scala's `val`)
 - **Macros end with `!`** - compile-time code generation
 - **Const requires compile-time evaluation** - can't use runtime functions like `format!`
+
+## Core Concepts:
+- **Ownership** - Every value has one owner; when owner goes out of scope, value is dropped
+- **Borrowing** - Can create references (`&T`) to use values without taking ownership
+- **Lifetimes** - Compiler tracks how long references are valid to prevent dangling pointers
+- **String vs &str** - Use `&str` for function params (flexible), `String` for owned/returned data
