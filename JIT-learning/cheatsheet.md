@@ -56,6 +56,12 @@ Organized chronologically as concepts appear.
 | `for (a, b) in vec` | Destructuring pattern in for loop (iterates over collection) | `for ((a, b) <- list)` |
 | `.as_u16()` | Convert type to u16 primitive (explicit conversion) | `.toInt`, `.toLong` etc |
 | `assert_eq!(a, b, "msg")` | Assert equality with custom failure message (3-arg form) | `assertEquals(a, b, "msg")` |
+| `mod name;` | Declare a module (looks for name.rs or name/mod.rs) | File creates package automatically |
+| `pub mod name;` | Declare a public module | N/A - packages public by default |
+| `pub use path::*;` | Re-export items from another module | `export path._` (Scala 3) |
+| `crate::` | Path from current crate root (relative, for internal use) | Package-relative imports |
+| `cratename::` | Path from external crate (absolute, for importing library) | `import libraryname._` |
+| `mod.rs` | Special filename - module root/index file | Like package object |
 
 ---
 
@@ -71,3 +77,4 @@ Organized chronologically as concepts appear.
 - **Borrowing** - Can create references (`&T`) to use values without taking ownership
 - **Lifetimes** - Compiler tracks how long references are valid to prevent dangling pointers
 - **String vs &str** - Use `&str` for function params (flexible), `String` for owned/returned data
+- **Module System** - Files don't auto-create modules; must declare with `mod`. Both module and items need `pub` for external visibility. See `concepts/modules-and-visibility.md` for deep dive
