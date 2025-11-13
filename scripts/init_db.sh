@@ -17,18 +17,32 @@ SUPERUSER="${SUPERUSER:=postgres}"
 SUPERUSER_PWD="${SUPERUSER_PWD:=password}"
 CONTAINER_NAME='postgres-zero2prod'
 
-# Launch Postgres using docker
-docker run \
-    --env POSTGRES_USER="${SUPERUSER}" \
-    --env POSTGRES_PASSWORD="${SUPERUSER_PWD}" \
-    --health-cmd="pg_isready -U ${SUPERUSER} || exit 1" \
-    --health-interval=1s \
-    --health-timeout=5s \
-    --health-retries=5 \
-    --publish "${DB_PORT}":5432 \
-    --detach \
-    --name "${CONTAINER_NAME}" \
-    postgres -N 1000
+# Check if container already exists
+if [ "$(docker ps -aq -f name=${CONTAINER_NAME})" ]; then
+    echo "Container ${CONTAINER_NAME} already exists."
+
+    # Check if it's running
+    if [ "$(docker ps -q -f name=${CONTAINER_NAME})" ]; then
+        echo "Container is already running."
+    else
+        echo "Starting existing container..."
+        docker start "${CONTAINER_NAME}"
+    fi
+else
+    echo "Creating new container ${CONTAINER_NAME}..."
+    # Launch Postgres using docker
+    docker run \
+        --env POSTGRES_USER="${SUPERUSER}" \
+        --env POSTGRES_PASSWORD="${SUPERUSER_PWD}" \
+        --health-cmd="pg_isready -U ${SUPERUSER} || exit 1" \
+        --health-interval=1s \
+        --health-timeout=5s \
+        --health-retries=5 \
+        --publish "${DB_PORT}":5432 \
+        --detach \
+        --name "${CONTAINER_NAME}" \
+        postgres -N 1000
+fi
 
 is_ready() {
     [ "$(docker inspect -f "{{.State.Health.Status}}" "${CONTAINER_NAME}")" = "healthy" ]
@@ -53,10 +67,14 @@ run_sql() {
     docker exec -it "${CONTAINER_NAME}" psql -U "${SUPERUSER}" -c "$1"
 }
 
-# CREATE THE APPLICATION USER
-run_sql "CREATE USER ${APP_USER} WITH PASSWORD '${APP_USER_PWD}';"
+# CREATE THE APPLICATION USER (idempotent: only if doesn't exist)
+run_sql "DO \$\$ BEGIN
+    IF NOT EXISTS (SELECT FROM pg_catalog.pg_user WHERE usename = '${APP_USER}') THEN
+        CREATE USER ${APP_USER} WITH PASSWORD '${APP_USER_PWD}';
+    END IF;
+END \$\$;"
 
-# GRANT DB PRIVILEGES TO THE APP USER
+# GRANT DB PRIVILEGES TO THE APP USER (idempotent: safe to run multiple times)
 run_sql "ALTER USER ${APP_USER} CREATEDB;"
 
 
