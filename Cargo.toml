@@ -38,6 +38,19 @@ const_format = "0.2"  # For compile-time string composition
 # The feature is not enabled by default to avoid pulling in
 # unnecessary dependencies for projects that do not need it.
 serde = { version = "1", features = ["derive"]}
+config = "0.14"
+
+# Using table-like toml syntax to avoid a super-long line!
+[dependencies.sqlx]
+version = "0.8"
+default-features = false
+features = [
+    "runtime-tokio-rustls", "macros",
+    "postgres",
+    "uuid",
+    "chrono",
+    "migrate"
+]
 
 [dev-dependencies]
 cargo-husky = { version = "1", default-features = false, features = ["user-hooks"] }
