@@ -1,3 +1,4 @@
+use actix_web::middleware::Logger;
 use actix_web::{App, HttpServer, dev::Server, web};
 use sqlx::PgPool;
 use std::net::TcpListener;
@@ -30,10 +31,14 @@ pub fn run(listener: TcpListener, db_conn_pool: PgPool) -> Result<Server, std::i
             // App is where all your application logic lives: routing, middlewares, request handlers, etc.
             // App is the component whose job is to take an incoming request as input and spit out a response.
             App::new()
-                // web::get() creates a route guard that only matches HTTP GET requests
-                // .to(greet) binds the greet handler function to this route
-                // So: "on GET request to this path, call greet()"
-                .route("/health_check", web::get().to(health_check))
+                // Adding Middlewares with the `wrap` method on `App`
+                .wrap(Logger::default()) // emits a log record for every incoming request.
+                .route(
+                    "/health_check",
+                    // web::get() creates a route guard that only matches HTTP GET requests
+                    // .to(health_check) binds the greet handler function to this route
+                    web::get().to(health_check),
+                )
                 .route(
                     "/greet",             // PATH: &str
                     web::get().to(greet), // ROUTE: Route (an instance of the Route struct)

@@ -4,6 +4,7 @@
 
 use std::net::TcpListener;
 
+use env_logger::Env;
 use sqlx::PgPool;
 
 use zero2prod::configuration::get_configuration;
@@ -15,6 +16,13 @@ use zero2prod::startup::run;
 // Like IORuntime.global in cats-effect - without it, async code can't run
 #[tokio::main]
 async fn main() -> Result<(), std::io::Error> {
+    // 12-factor: RUST_LOG is required config, fail fast if missing
+    std::env::var("RUST_LOG")
+        .expect("RUST_LOG environment variable must be set (e.g., RUST_LOG=info)");
+
+    env_logger::Builder::from_env(Env::default().filter("RUST_LOG"))
+        .init();
+
     let config = get_configuration().expect("Failed to read configuration.");
 
     let listener = TcpListener::bind(config.server.tcp_socket_address())

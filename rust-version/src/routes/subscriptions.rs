@@ -74,6 +74,8 @@ pub async fn subscribe(
     // SCALA: Same behavior - if req.as[FormData] fails to decode, http4s middleware
     //        automatically returns 400 Bad Request via DecodeFailure handling
 
+    log::info!("Saving new subscriber details in the database: {} {}", _form.email, _form.name);
+
     // `Result` of sqlx::query! has two variants: `Ok` and `Err`.
     match sqlx::query!(
         r#"
@@ -88,9 +90,16 @@ pub async fn subscribe(
     .execute(_db_conn.get_ref()) // an immutable reference to the `PgPool` wrapped by `web::Data`.
     .await
     {
-        Ok(_) => HttpResponse::Ok().finish(),
+        Ok(_) => {
+            log::info!("New subscriber details saved");
+            HttpResponse::Ok().finish()
+        }
         Err(e) => {
-            println!("Failed to execute query:{}", e);
+            /*
+            using {:?}, the std::fmt::Debug format,
+            to capture the query error and extract as much information as possible
+            */
+            log::error!("Failed to execute query:{:?}", e);
             HttpResponse::InternalServerError().finish()
         }
     }
