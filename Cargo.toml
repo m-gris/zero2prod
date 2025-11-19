@@ -38,7 +38,7 @@ const_format = "0.2"  # For compile-time string composition
 # The feature is not enabled by default to avoid pulling in
 # unnecessary dependencies for projects that do not need it.
 serde = { version = "1", features = ["derive"]}
-config = "0.14"
+config = { version = "0.15", default-features = false, features = ["toml", "yaml"] }
 uuid = { version = "1", features = ["v4"] }
 chrono = { version = "0.4.22", default-features = false, features = ["clock"] }
 log = "0.4"
