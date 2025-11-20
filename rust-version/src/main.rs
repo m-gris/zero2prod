@@ -6,13 +6,9 @@ use std::net::TcpListener;
 
 use sqlx::PgPool;
 
-use tracing::subscriber::set_global_default;
-use tracing_bunyan_formatter::{BunyanFormattingLayer, JsonStorageLayer};
-use tracing_log::LogTracer;
-use tracing_subscriber::{EnvFilter, Registry, layer::SubscriberExt};
-
 use zero2prod::configuration::get_configuration;
 use zero2prod::startup::run;
+use zero2prod::telemetry::{get_subscriber, init_subscriber};
 
 // Attribute macro: #[...] applies transformations to the item below (func, etc...)
 // tokio::main is a procedural macro that transforms async fn main() into a proper program entry point
@@ -20,30 +16,15 @@ use zero2prod::startup::run;
 // Like IORuntime.global in cats-effect - without it, async code can't run
 #[tokio::main]
 async fn main() -> Result<(), std::io::Error> {
-    // 12-factor: RUST_LOG is required config, fail fast if missing
-    std::env::var("RUST_LOG")
-        .expect("RUST_LOG environment variable must be set (e.g., RUST_LOG=info)");
-
-    // Redirects all `log`'s events to our subscriber
-    LogTracer::init().expect("Failed to set logger");
-
-    let env_filter = EnvFilter::try_from_default_env().unwrap_or_else(|_| EnvFilter::new("infos"));
-
-    let formatting_layer = BunyanFormattingLayer::new(
+    let subscriber = get_subscriber(
+        // .into() - Type conversion using Into trait.
+        // Compiler infers target type from context.
+        // Scala equivalent: implicit conversions, but explicit call in Rust
         "zero2prod".into(),
-        // output the formatted spans to stdout
-        std::io::stdout,
+        "info".into(),
     );
 
-    let subscriber = Registry::default()
-        // `.with` is provided by `SubscriberExt`
-        // an extension trait for `Subscriber` exposed by `tracing_subscriber`
-        .with(env_filter)
-        .with(JsonStorageLayer)
-        .with(formatting_layer);
-
-    // specify which subscriber should process the span
-    set_global_default(subscriber).expect("Failed to set subscriber");
+    init_subscriber(subscriber);
 
     let config = get_configuration().expect("Failed to read configuration.");
 

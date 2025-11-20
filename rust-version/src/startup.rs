@@ -25,7 +25,8 @@ pub fn run(listener: TcpListener, db_conn_pool: PgPool) -> Result<Server, std::i
         // `move` transfers the ownership of `wrapped_clonable_db_conn`
         // from`server` to this zero-lambda closure
         move || {
-            // Closure syntax: || { ... } for zero args, |a, b| { ... } for args
+            // Closure syntax: || { ... } for a zero lambda,
+            // |x| { ... } for a unary-lambda
             // Can add types: |a: i32, b: String| { ... }
 
             // App is where all your application logic lives: routing, middlewares, request handlers, etc.
@@ -50,10 +51,7 @@ pub fn run(listener: TcpListener, db_conn_pool: PgPool) -> Result<Server, std::i
                 .app_data(wrapped_clonable_db_conn.clone())
         },
     )
-    .listen(listener)? // ? operator: if bind() fails, return the error immediately
-    // if success, unwrap the Ok value and continue
-    // Requires function to return Result<T, E>
-    // Like early exit in Scala for-comprehension, but for errors
+    .listen(listener)?
     .run(); // Returns a Future (NOTA: lazy in rust - pure description of work - doesn't execute yet!)
 
     // We return the server without awaiting it,
