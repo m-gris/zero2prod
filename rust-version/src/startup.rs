@@ -3,7 +3,6 @@ use actix_web::{App, HttpServer, dev::Server, web};
 use sqlx::PgPool;
 use std::net::TcpListener;
 
-use crate::routes::greet;
 use crate::routes::health_check;
 use crate::routes::subscribe;
 
@@ -41,11 +40,9 @@ pub fn run(listener: TcpListener, db_conn_pool: PgPool) -> Result<Server, std::i
                     web::get().to(health_check),
                 )
                 .route(
-                    "/greet",             // PATH: &str
-                    web::get().to(greet), // ROUTE: Route (an instance of the Route struct)
+                    "/subscription",           // PATH: &str
+                    web::post().to(subscribe), // ROUTE: Route (an instance of the Route struct)
                 )
-                .route("/greet/{name}", web::get().to(greet))
-                .route("/subscription", web::post().to(subscribe))
                 // Register a PgPool as part of our application state
                 // byt getting a pointer copy and attach it to the application state
                 .app_data(wrapped_clonable_db_conn.clone())
